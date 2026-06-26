@@ -59,6 +59,7 @@ for spec in "$@"; do
   echo "  - ${spec}" >&2
   if ! check_url "${spec}" 2>/dev/null; then
     echo "    still failing" >&2
+    check_url "${spec}" 2>&1 | sed 's/^/      /' >&2 || true
   fi
 done
 exit 1
