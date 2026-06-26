@@ -236,7 +236,7 @@ Please include hardware details — results vary significantly by CPU count and 
 | File | Purpose |
 |------|---------|
 | `configs/litellm-config.yaml` | Points litellm at `mock-server:8081` |
-| `configs/agentgateway.yaml` | Routes `/` to `mock-server:8081` |
+| `configs/agentgateway.yaml` | Simplified `llm` config (v1.3+) → `mock-server:8081` via `baseUrl` |
 | `docker-compose.yml` | Orchestrates all three containers |
 
 ### LiteLLM workers
