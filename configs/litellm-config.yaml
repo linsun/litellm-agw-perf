@@ -1,0 +1,6 @@
+model_list:
+  - model_name: openai/gpt-3.5-turbo
+    litellm_params:
+      model: openai/dummy
+      api_base: http://mock-server:8081/v1
+      api_key: dummy

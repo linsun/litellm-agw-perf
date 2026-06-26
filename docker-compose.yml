@@ -1,0 +1,42 @@
+name: litellm-agw-perf
+
+services:
+  mock-server:
+    container_name: perf-mock-server
+    image: howardjohn/hyper-server:latest
+    env_file:
+      - ${MOCK_SERVER_ENV_FILE:?MOCK_SERVER_ENV_FILE must be set}
+    ports:
+      - "8081:8081"
+
+  litellm:
+    container_name: perf-litellm
+    image: ghcr.io/berriai/litellm:main-latest
+    command: ["--config", "/app/config.yaml"]
+    volumes:
+      - ./configs/litellm-config.yaml:/app/config.yaml:ro
+    environment:
+      DEFAULT_NUM_WORKERS_LITELLM_PROXY: ${LITELLM_WORKERS:-}
+    ports:
+      - "4000:4000"
+    depends_on:
+      mock-server:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:4000/health/liveliness"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  agentgateway:
+    container_name: perf-agentgateway
+    image: ghcr.io/agentgateway/agentgateway:v1.3.1
+    command: ["-f", "/app/config.yaml"]
+    volumes:
+      - ./configs/agentgateway.yaml:/app/config.yaml:ro
+    ports:
+      - "4001:4001"
+    depends_on:
+      mock-server:
+        condition: service_started
