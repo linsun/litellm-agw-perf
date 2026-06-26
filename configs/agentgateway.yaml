@@ -5,7 +5,7 @@ config:
 llm:
   port: 4001
   models:
-    - name: "gpt-3.5-turbo"
+    - name: "openai/gpt-3.5-turbo"
       provider: openAI
       params:
         baseUrl: http://mock-server:8081/v1
