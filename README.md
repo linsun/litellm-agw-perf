@@ -288,7 +288,7 @@ litellm-agw/
 
 ## Acknowledgements
 
-Thanks to [John Howard](https://github.com/howardjohn) for sharing the initial benchmark tooling that this repo builds on and the [`hyper-server`](https://github.com/howardjohn/hyper-server) mock OpenAI backend (`howardjohn/hyper-server`).
+Thanks to [John Howard](https://github.com/howardjohn) for sharing the initial benchmark scripts that this repo builds on and the [`hyper-server`](https://github.com/howardjohn/hyper-server) mock OpenAI backend (`howardjohn/hyper-server`).
 
 ## License
 
