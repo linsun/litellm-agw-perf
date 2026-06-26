@@ -286,6 +286,11 @@ litellm-agw/
 | `MOCK_SERVER_ENV_FILE must be set` | Use `run-benchmark.sh` or run `write-mock-server-env.sh` before `docker compose up` |
 | Very different results between runs | Normal — close other load; note CPU count and worker settings |
 
+## Acknowledgements
+
+Thanks to [John Howard](https://github.com/howardjohn) for sharing the initial benchmark tooling that this repo builds on and the [`hyper-server`](https://github.com/howardjohn/hyper-server) mock OpenAI backend (`howardjohn/hyper-server`).
+
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
+
