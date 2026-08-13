@@ -9,4 +9,4 @@ model_list:
       model: anthropic/claude-3-5-haiku-20241022
       api_base: http://mock-server:8081   # Anthropic-style base
       api_key: dummy
-      rust: true  
+      rust: true

@@ -1,6 +1,6 @@
 # litellm vs agentgateway performance benchmark
 
-Compare **litellm** and **agentgateway** proxy overhead under load: throughput, latency, CPU, and memory. Both gateways forward chat completion requests to a local mock OpenAI backend so results reflect proxy performance only (no real model inference or external API calls).
+Compare **litellm** and **agentgateway** proxy overhead under load: throughput, latency, CPU, and memory. Both gateways forward requests to a local mock backend so results reflect proxy performance only (no real model inference or external API calls). Default mode is OpenAI chat completions; Anthropic Messages is optional (`-a anthropic`).
 
 ## Architecture
 
@@ -12,7 +12,7 @@ fortio (bt) ──► agentgateway :4001 ──┘
 
 | Component | Role |
 |-----------|------|
-| `perf-mock-server` | Fake OpenAI API — returns a fixed JSON response for every request |
+| `perf-mock-server` | Fake OpenAI/Anthropic API — returns a fixed JSON response for every request |
 | `perf-litellm` | [LiteLLM](https://github.com/BerriAI/litellm) proxy on port 4000 |
 | `perf-agentgateway` | [agentgateway](https://github.com/agentgateway/agentgateway) on port 4001 |
 | `scripts/bt` | Load generator wrapper around [fortio](https://fortio.org/) |
@@ -51,7 +51,8 @@ Output is written to `results/<run-id>/`. The script prints latency/throughput a
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
-| Payload size | 1024 chars | JSON chat completion body |
+| API format | `openai` | OpenAI `/v1/chat/completions`; use `-a anthropic` for Messages API |
+| Payload size | 1024 chars | JSON request body |
 | Connections | 32 | Concurrent fortio threads |
 | Duration | 3s | Per gateway (litellm then agentgateway) |
 | QPS | 0 (max) | As fast as possible |
@@ -76,6 +77,9 @@ Output is written to `results/<run-id>/`. The script prints latency/throughput a
 
 # leave containers running after the benchmark
 ./scripts/run-benchmark.sh --skip-down
+
+# Anthropic Messages API mode (optional; see below)
+./scripts/run-benchmark.sh -a anthropic
 ```
 
 ### Options
@@ -87,8 +91,99 @@ Output is written to `results/<run-id>/`. The script prints latency/throughput a
 -d, --duration        Benchmark duration in seconds per gateway (default: 3)
 -t, --tool            Load generator: fortio, hey, oha, wrk (default: fortio)
 -w, --workers         LiteLLM worker count (default: CPU count)
+-a, --api             API format: openai or anthropic (default: openai)
 --skip-up             Skip docker compose up (services already running)
 --skip-down           Leave containers running after the benchmark
+```
+
+### Optional: Anthropic Messages mode (mock server)
+
+By default the harness uses OpenAI `POST /v1/chat/completions`. You can optionally switch both gateways and the mock to Anthropic `POST /v1/messages`. That is useful for exercising LiteLLM’s [Rust path](https://docs.litellm.ai/docs/proxy/rust_gateway) (`rust: true`), which currently covers Anthropic Messages (not OpenAI chat completions).
+
+**1. Point configs at Anthropic + mock**
+
+Edit `configs/litellm-config.yaml`:
+
+```yaml
+model_list:
+  - model_name: claude-mock
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_base: http://mock-server:8081
+      api_key: dummy
+      rust: true   # optional; requires LiteLLM >= 1.94.0
+```
+
+Edit `configs/agentgateway.yaml`:
+
+```yaml
+config:
+  adminAddr: 0.0.0.0:23500
+  statsAddr: 0.0.0.0:23501
+  readinessAddr: 0.0.0.0:23502
+llm:
+  port: 4001
+  models:
+    - name: "claude-mock"
+      provider: anthropic
+      params:
+        baseUrl: http://mock-server:8081/v1
+        model: claude-3-5-haiku-20241022
+        apiKey: dummy
+```
+
+**2. Generate Anthropic request/response payloads**
+
+```bash
+# Anthropic only
+./scripts/generate-payloads.sh 1024 anthropic
+# -> payloads/req-anthropic-1024.json
+# -> payloads/resp-anthropic-1024.json
+
+# Or both OpenAI + Anthropic
+./scripts/generate-payloads.sh 1024 both
+```
+
+The Anthropic mock response includes `"type": "message"` so LiteLLM’s Rust bridge can parse it (OpenAI `chat.completion` shapes cause Rust to fall back to Python).
+
+**3. Run the benchmark**
+
+```bash
+./scripts/run-benchmark.sh -a anthropic
+```
+
+`run-benchmark.sh` will:
+
+- load Anthropic payloads into the mock server
+- wait on `POST /v1/messages` for both gateways
+- print whether LiteLLM returned `x-litellm-rust: true` before load starts
+- drive fortio against `/v1/messages` on ports 4000 and 4001
+
+**4. Verify Rust is active (optional smoke test)**
+
+With the stack up and Anthropic configs/payloads in place:
+
+```bash
+./scripts/write-mock-server-env.sh payloads/resp-anthropic-1024.json /tmp/mock-server.env
+export MOCK_SERVER_ENV_FILE=/tmp/mock-server.env
+docker compose up -d --force-recreate
+
+curl -sD - -o /dev/null http://127.0.0.1:4000/v1/messages \
+  -H "Content-Type: application/json" \
+  -d @payloads/req-anthropic-1024.json \
+  | grep -iE 'HTTP/|x-litellm-rust|x-litellm-version'
+```
+
+Look for `x-litellm-rust: true`. If the header is missing, the request stayed on the Python path (wrong mock body, old LiteLLM image, or Rust fallback).
+
+**5. Switch back to OpenAI mode**
+
+Restore the OpenAI blocks in `configs/litellm-config.yaml` and `configs/agentgateway.yaml`, then:
+
+```bash
+./scripts/run-benchmark.sh -a openai
+# or just:
+./scripts/run-benchmark.sh
 ```
 
 ### Manual / piecemeal
@@ -116,6 +211,8 @@ cat payloads/req-1024.json | ./scripts/bt -d 3 -c 32 -q 0 --csv --payload-conten
 # 5. Tear down
 docker compose down
 ```
+
+For Anthropic mode manually, use `resp-anthropic-1024.json` / `req-anthropic-1024.json` and `/v1/messages` instead of `/v1/chat/completions`.
 
 ## Results
 
@@ -235,9 +332,10 @@ Please include hardware details — results vary significantly by CPU count and 
 
 | File | Purpose |
 |------|---------|
-| `configs/litellm-config.yaml` | Points litellm at `mock-server:8081` |
-| `configs/agentgateway.yaml` | Simplified `llm` config (v1.3+) → `mock-server:8081` via `baseUrl` |
+| `configs/litellm-config.yaml` | Points litellm at `mock-server:8081` (OpenAI or Anthropic model entry) |
+| `configs/agentgateway.yaml` | Simplified `llm` config → `mock-server:8081` via `baseUrl` |
 | `docker-compose.yml` | Orchestrates all three containers |
+| `scripts/gen-req.py` / `gen-resp.py` | Generate OpenAI or Anthropic JSON payloads (`openai` \| `anthropic`) |
 
 ### LiteLLM workers
 
@@ -285,6 +383,8 @@ litellm-agw/
 | Empty `metrics-*.csv` | Ensure Docker is running; `docker stats` must work for container names `perf-*` |
 | `MOCK_SERVER_ENV_FILE must be set` | Use `run-benchmark.sh` or run `write-mock-server-env.sh` before `docker compose up` |
 | Very different results between runs | Normal — close other load; note CPU count and worker settings |
+| Anthropic mode: no `x-litellm-rust` header | Use Anthropic mock response (`resp-anthropic-*.json`), LiteLLM ≥ 1.94.0, and `rust: true` in config |
+| Anthropic mode: 404 / model mismatch | Ensure litellm + agentgateway model names match the request (`claude-mock`) |
 
 ## Acknowledgements
 
