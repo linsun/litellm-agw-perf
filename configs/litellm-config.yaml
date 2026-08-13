@@ -1,12 +1,12 @@
 model_list:
-  # - model_name: openai/gpt-3.5-turbo
-  #   litellm_params:
-  #     model: openai/dummy
-  #     api_base: http://mock-server:8081/v1
-  #     api_key: dummy
-  - model_name: claude-mock # for test litellm rust
+  - model_name: openai/gpt-3.5-turbo
     litellm_params:
-      model: anthropic/claude-3-5-haiku-20241022
-      api_base: http://mock-server:8081   # Anthropic-style base
+      model: openai/dummy
+      api_base: http://mock-server:8081/v1
       api_key: dummy
-      rust: true
+  # - model_name: claude-mock # for test litellm rust
+  #   litellm_params:
+  #     model: anthropic/claude-3-5-haiku-20241022
+  #     api_base: http://mock-server:8081   # Anthropic-style base
+  #     api_key: dummy
+  #     rust: true

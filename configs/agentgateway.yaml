@@ -5,15 +5,17 @@ config:
 llm:
   port: 4001
   models:
-    # - name: "openai/gpt-3.5-turbo"
-    #   provider: openAI
-    #   params:
-    #     baseUrl: http://mock-server:8081/v1
-    #     model: gpt-3.5-turbo
-    #     apiKey: dummy  
-    - name: "claude-mock"
-      provider: anthropic
+    # For openAI
+    - name: "openai/gpt-3.5-turbo"
+      provider: openAI
       params:
         baseUrl: http://mock-server:8081/v1
-        model: claude-3-5-haiku-20241022
+        model: gpt-3.5-turbo
         apiKey: dummy
+    # For anthropic
+    # - name: "claude-mock"
+    #   provider: anthropic
+    #   params:
+    #     baseUrl: http://mock-server:8081/v1
+    #     model: claude-3-5-haiku-20241022
+    #     apiKey: dummy
