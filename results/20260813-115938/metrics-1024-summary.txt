@@ -1,0 +1,4 @@
+CONTAINER,SAMPLES,AVG_CPU%,PEAK_CPU%,AVG_MEM,PEAK_MEM
+perf-agentgateway,21,10.34%,26.64%,13.15MiB,16.57MiB
+perf-litellm,21,97.19%,204.85%,2.14GiB,2.15GiB
+perf-mock-server,21,2.70%,4.23%,2.08MiB,2.24MiB
