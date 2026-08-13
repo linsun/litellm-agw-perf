@@ -1,0 +1,10 @@
+timestamp,container,cpu_percent,mem_usage
+1786585954,perf-litellm,204.44%,2.153GiB / 23.68GiB
+1786585954,perf-agentgateway,0.02%,9.809MiB / 23.68GiB
+1786585954,perf-mock-server,2.23%,2.039MiB / 23.68GiB
+1786585957,perf-litellm,0.61%,2.152GiB / 23.68GiB
+1786585957,perf-agentgateway,482.13%,33.27MiB / 23.68GiB
+1786585957,perf-mock-server,52.30%,3.559MiB / 23.68GiB
+1786585960,perf-litellm,0.54%,2.152GiB / 23.68GiB
+1786585960,perf-agentgateway,114.54%,34.31MiB / 23.68GiB
+1786585960,perf-mock-server,0.00%,3.543MiB / 23.68GiB

@@ -1,0 +1,273 @@
+{
+  "RunType": "HTTP",
+  "Labels": "127.0.0.1:4000/v1/messages , linsun-MacBook-Pro",
+  "StartTime": "2026-08-12T21:52:34.48398-04:00",
+  "RequestedQPS": "max",
+  "RequestedDuration": "3s",
+  "ActualQPS": 983.5568935448973,
+  "ActualDuration": 3031853083,
+  "NumThreads": 32,
+  "Version": "1.73.0",
+  "DurationHistogram": {
+    "Count": 2982,
+    "Min": 0.005328833,
+    "Max": 0.077185459,
+    "Sum": 96.52237536399998,
+    "Avg": 0.032368335132126086,
+    "StdDev": 0.011796098969427474,
+    "Data": [
+      {
+        "Start": 0.005328833,
+        "End": 0.0075,
+        "Percent": 0.1676727028839705,
+        "Count": 5
+      },
+      {
+        "Start": 0.0075,
+        "End": 0.01,
+        "Percent": 0.8048289738430584,
+        "Count": 19
+      },
+      {
+        "Start": 0.01,
+        "End": 0.02,
+        "Percent": 18.209255533199194,
+        "Count": 519
+      },
+      {
+        "Start": 0.02,
+        "End": 0.03,
+        "Percent": 44.09792085848424,
+        "Count": 772
+      },
+      {
+        "Start": 0.03,
+        "End": 0.04,
+        "Percent": 71.69684775318578,
+        "Count": 823
+      },
+      {
+        "Start": 0.04,
+        "End": 0.049999999999999996,
+        "Percent": 93.158953722334,
+        "Count": 640
+      },
+      {
+        "Start": 0.049999999999999996,
+        "End": 0.075,
+        "Percent": 99.9664654594232,
+        "Count": 203
+      },
+      {
+        "Start": 0.075,
+        "End": 0.077185459,
+        "Percent": 100,
+        "Count": 1
+      }
+    ],
+    "Percentiles": [
+      {
+        "Percentile": 50,
+        "Value": 0.03213851761846902
+      },
+      {
+        "Percentile": 75,
+        "Value": 0.0415390625
+      },
+      {
+        "Percentile": 90,
+        "Value": 0.048528125
+      },
+      {
+        "Percentile": 99,
+        "Value": 0.07145073891625615
+      },
+      {
+        "Percentile": 99.9,
+        "Value": 0.07475591133004929
+      }
+    ]
+  },
+  "ErrorsDurationHistogram": {
+    "Count": 0,
+    "Min": 0,
+    "Max": 0,
+    "Sum": 0,
+    "Avg": 0,
+    "StdDev": 0,
+    "Data": null
+  },
+  "Exactly": 0,
+  "Jitter": false,
+  "Uniform": true,
+  "NoCatchUp": false,
+  "RunID": 0,
+  "AccessLoggerInfo": "",
+  "ID": "2026-08-12-215234_127_0_0_1_4000_v1_messages_linsun_MacBook_Pro",
+  "RetCodes": {
+    "200": 2982
+  },
+  "IPCountMap": {
+    "127.0.0.1:4000": 32
+  },
+  "Insecure": true,
+  "MTLS": false,
+  "CACert": "",
+  "Cert": "",
+  "Key": "",
+  "UnixDomainSocket": "",
+  "URL": "http://127.0.0.1:4000/v1/messages",
+  "NumConnections": 1,
+  "Compression": false,
+  "DisableFastClient": false,
+  "HTTP10": false,
+  "H2": false,
+  "DisableKeepAlive": false,
+  "AllowHalfClose": false,
+  "FollowRedirects": false,
+  "Resolve": "",
+  "HTTPReqTimeOut": 3000000000,
+  "UserCredentials": "",
+  "ContentType": "application/json",
+  "Payload": "eyJtb2RlbCI6ICJjbGF1ZGUtbW9jayIsICJtYXhfdG9rZW5zIjogMTI4LCAibWVzc2FnZXMiOiBbeyJyb2xlIjogInVzZXIiLCAiY29udGVudCI6ICJxdW9kIGluIGVsaWdlbmRpIHVuZGUgdmVsIHNpbnQgZWl1cyBhY2N1c2FudGl1bSBvcHRpbyBhc3Blcm5hdHVyIHNpdCBhcmNoaXRlY3RvIGJlYXRhZSBtb2xlc3RpYWUgcXVhc2kgdm9sdXB0YXRlbSB2ZXJpdGF0aXMgdm9sdXB0YXR1bSBzZWQgbm9zdHJ1bSB2b2x1cHRhdGVzIGVuaW0gaGljIGF1dCBldW0gbGFib3Jpb3NhbSByZWN1c2FuZGFlIG9mZmljaWEgc3VzY2lwaXQgYWxpYXMgZXhjZXB0dXJpIHZlcm8gcXVpZGVtIGRpc3RpbmN0aW8gc3VudCBuZWNlc3NpdGF0aWJ1cyBlYXJ1bSBjdWxwYSBkZXNlcnVudCBwcmFlc2VudGl1bSBjb25zZXF1dW50dXIgbmloaWwgZG9sb3J1bSBvZGlvIGFuaW1pIG51bGxhIGV4cGxpY2FibyBvbW5pcyBjb21tb2RpIGlsbHVtIGFkIGVhIHF1aXNxdWFtIGVzdCBtaW51cyB0b3RhbSBmdWdpYXQgcmVwcmVoZW5kZXJpdCBxdW9zIG5vYmlzIG5lc2NpdW50IGluY2lkdW50IGV4cGVkaXRhIGRvbG9yZXMgY3VtcXVlIG1vZGkgcGFyaWF0dXIgZXNzZSBpcHNhbSByZXBlbGxhdCB1bGxhbSBwbGFjZWF0IGl1cmUgYWRpcGlzY2kgb2RpdCBwZXJmZXJlbmRpcyBjb25zZXF1YXR1ciBhdXRlbSBldmVuaWV0IGlkIG5lcXVlIGFwZXJpYW0gYWNjdXNhbXVzIHBvcnJvIG9iY2FlY2F0aSBwb3NzaW11cyBxdWkgbGliZXJvIG5hbSBhc3N1bWVuZGEgdm9sdXB0YXRlIG1hZ25hbSBlYXF1ZSBxdWFlIHZpdGFlIGRvbG9yIGZhY2lsaXMgdGVtcG9yaWJ1cyBmdWdhIG1hZ25pIHByb3ZpZGVudCBoYXJ1bSBxdWlhIGJsYW5kaXRpaXMgbmVtbyBxdWFlcmF0IGl1c3RvIGFsaXF1YW0gbW9sZXN0aWFzIGFtZXQgcXVhcyBjdXBpZGl0YXRlIGF0cXVlIHZvbHVwdGF0aWJ1cyB1dCBkb2xvcmVtIHJlbSBkb2xvcmlidXMgbGFib3J1bSBpbXBlZGl0IHF1aWJ1c2RhbSBkZWxlY3R1cyBldCBlb3MgY29ycG9yaXMgY29uc2VjdGV0dXIgY29ycnVwdGkgbW9sbGl0aWEgYWxpcXVpZCBhIGlzdGUgc2FlcGUgbWluaW1hIGV4ZXJjaXRhdGlvbmVtIG5hdHVzIGl0YXF1ZSBhYiBub24gc2ltaWxpcXVlIn1dfQo=",
+  "MethodOverride": "POST",
+  "LogErrors": true,
+  "SequentialWarmup": false,
+  "ConnReuseRange": [
+    0,
+    0
+  ],
+  "NoResolveEachConn": false,
+  "Offset": 0,
+  "Resolution": 0.000001,
+  "Sizes": {
+    "Count": 2982,
+    "Min": 2018,
+    "Max": 2018,
+    "Sum": 6017676,
+    "Avg": 2018,
+    "StdDev": 0,
+    "Data": [
+      {
+        "Start": 2018,
+        "End": 2018,
+        "Percent": 100,
+        "Count": 2982
+      }
+    ]
+  },
+  "HeaderSizes": {
+    "Count": 2982,
+    "Min": 785,
+    "Max": 785,
+    "Sum": 2340870,
+    "Avg": 785,
+    "StdDev": 0,
+    "Data": [
+      {
+        "Start": 785,
+        "End": 785,
+        "Percent": 100,
+        "Count": 2982
+      }
+    ]
+  },
+  "Sockets": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "SocketCount": 32,
+  "ConnectionStats": {
+    "Count": 32,
+    "Min": 0.000607209,
+    "Max": 0.001383708,
+    "Sum": 0.029778753999999998,
+    "Avg": 0.0009305860624999999,
+    "StdDev": 0.0001902034385381771,
+    "Data": [
+      {
+        "Start": 0.000607209,
+        "End": 0.0007,
+        "Percent": 15.625,
+        "Count": 5
+      },
+      {
+        "Start": 0.0007,
+        "End": 0.0007999999999999999,
+        "Percent": 28.125,
+        "Count": 4
+      },
+      {
+        "Start": 0.0007999999999999999,
+        "End": 0.0009,
+        "Percent": 40.625,
+        "Count": 4
+      },
+      {
+        "Start": 0.0009,
+        "End": 0.001,
+        "Percent": 56.25,
+        "Count": 5
+      },
+      {
+        "Start": 0.001,
+        "End": 0.001383708,
+        "Percent": 100,
+        "Count": 14
+      }
+    ],
+    "Percentiles": [
+      {
+        "Percentile": 50,
+        "Value": 0.00096
+      },
+      {
+        "Percentile": 75,
+        "Value": 0.0011644462857142858
+      },
+      {
+        "Percentile": 90,
+        "Value": 0.0012960033142857142
+      },
+      {
+        "Percentile": 99,
+        "Value": 0.0013749375314285714
+      },
+      {
+        "Percentile": 99.9,
+        "Value": 0.0013828309531428572
+      }
+    ]
+  },
+  "AbortOn": 0
+}
