@@ -31,7 +31,7 @@ services:
 
   agentgateway:
     container_name: perf-agentgateway
-    image: ghcr.io/agentgateway/agentgateway:v1.3.1
+    image: ghcr.io/agentgateway/agentgateway:v1.4.1
     command: ["-f", "/app/config.yaml"]
     volumes:
       - ./configs/agentgateway.yaml:/app/config.yaml:ro

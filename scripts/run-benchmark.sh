@@ -10,6 +10,7 @@ QPS="${QPS:-0}"
 DURATION="${DURATION:-3}"
 TOOL="${TOOL:-fortio}"
 LITELLM_WORKERS="${LITELLM_WORKERS:-}"
+API_FORMAT="${API_FORMAT:-anthropic}"
 KEEP_RUNNING="${KEEP_RUNNING:-false}"
 COMPOSE_FILE="${ROOT}/docker-compose.yml"
 
@@ -17,7 +18,7 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [options]
 
-Runs LiteLLM and agentgateway against a mock OpenAI backend, measures
+Runs LiteLLM and agentgateway against a mock LLM backend, measures
 throughput/latency (via fortio) and CPU/memory (via docker stats).
 
 Options:
@@ -27,6 +28,7 @@ Options:
   -d, --duration        Benchmark duration in seconds (default: 3)
   -t, --tool            Load generator: fortio, hey, oha, wrk (default: fortio)
   -w, --workers         LiteLLM worker count (default: CPU count)
+  -a, --api             API format: openai or anthropic (default: anthropic)
   --skip-up             Skip docker compose up (services already running)
   --skip-down           Leave containers running after the benchmark
   -h, --help            Show this help
@@ -35,10 +37,12 @@ Environment:
   RESULTS_DIR           Output directory (default: ./results)
   PAYLOAD_FILE          Deprecated; mock payload is written to MOCK_SERVER_ENV_FILE
   MOCK_SERVER_ENV_FILE    Env file for hyper-server (set automatically by run-benchmark.sh)
+  API_FORMAT            Same as --api
 
 Examples:
   $(basename "$0")
-  $(basename "$0") -s 1024,4096 -c 32 -d 10 -q 0
+  $(basename "$0") -a openai -s 1024 -c 32 -d 10 -q 0
+  $(basename "$0") -a anthropic -d 5
   $(basename "$0") --skip-up --skip-down -d 5
 EOF
 }
@@ -54,12 +58,18 @@ while (( "$#" )); do
     -d|--duration) DURATION="$2"; shift 2 ;;
     -t|--tool) TOOL="$2"; shift 2 ;;
     -w|--workers) LITELLM_WORKERS="$2"; shift 2 ;;
+    -a|--api) API_FORMAT="$2"; shift 2 ;;
     --skip-up) SKIP_UP=true; shift ;;
     --skip-down) SKIP_DOWN=true; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
   esac
 done
+
+case "${API_FORMAT}" in
+  openai|anthropic) ;;
+  *) echo "Invalid --api value: ${API_FORMAT} (expected openai|anthropic)" >&2; exit 1 ;;
+esac
 
 if [[ -z "${LITELLM_WORKERS}" ]]; then
   LITELLM_WORKERS="$(sysctl -n hw.ncpu 2>/dev/null || nproc)"
@@ -87,9 +97,10 @@ mkdir -p "${RUN_DIR}"
 echo "==> Run ID: ${RUN_ID}"
 echo "==> Results: ${RUN_DIR}"
 echo "==> LiteLLM workers: ${LITELLM_WORKERS}"
+echo "==> API format: ${API_FORMAT}"
 
 for size in ${PAYLOAD_SIZES//,/ }; do
-  "${ROOT}/scripts/generate-payloads.sh" "${size}"
+  "${ROOT}/scripts/generate-payloads.sh" "${size}" "${API_FORMAT}"
 done
 
 compose_down() {
@@ -112,16 +123,29 @@ echo "DEST,CLIENT,QPS,CONS,DUR,PAYLOAD,SUCCESS,THROUGHPUT,P50,P90,P99" > "${LATE
 METRICS_SUMMARY="${RUN_DIR}/resources.csv"
 echo "PAYLOAD,CONTAINER,SAMPLES,AVG_CPU%,PEAK_CPU%,AVG_MEM,PEAK_MEM" > "${METRICS_SUMMARY}"
 
+if [[ "${API_FORMAT}" == "anthropic" ]]; then
+  LITELLM_PATH="/v1/messages"
+  AGW_PATH="/v1/messages"
+else
+  LITELLM_PATH="/v1/chat/completions"
+  AGW_PATH="/v1/chat/completions"
+fi
+
 for size in ${PAYLOAD_SIZES//,/ }; do
-  REQ_FILE="${ROOT}/payloads/req-${size}.json"
-  RESP_FILE="${ROOT}/payloads/resp-${size}.json"
+  if [[ "${API_FORMAT}" == "anthropic" ]]; then
+    REQ_FILE="${ROOT}/payloads/req-anthropic-${size}.json"
+    RESP_FILE="${ROOT}/payloads/resp-anthropic-${size}.json"
+  else
+    REQ_FILE="${ROOT}/payloads/req-${size}.json"
+    RESP_FILE="${ROOT}/payloads/resp-${size}.json"
+  fi
 
   if [[ ! -f "${REQ_FILE}" || ! -f "${RESP_FILE}" ]]; then
-    echo "Missing payload files for size ${size}" >&2
+    echo "Missing payload files for size ${size} (${API_FORMAT})" >&2
     exit 1
   fi
 
-  echo "==> Benchmarking payload size ${size} bytes"
+  echo "==> Benchmarking payload size ${size} bytes (${API_FORMAT})"
 
   if [[ "${SKIP_UP}" != "true" ]]; then
     MOCK_SERVER_ENV="${RUN_DIR}/mock-server-${size}.env"
@@ -132,8 +156,19 @@ for size in ${PAYLOAD_SIZES//,/ }; do
     "${ROOT}/scripts/wait-for-urls.sh" 300 \
       "http://127.0.0.1:8081/" \
       "http://127.0.0.1:4000/health/liveliness" \
-      "POST:http://127.0.0.1:4001/v1/chat/completions|${REQ_FILE}"
+      "POST:http://127.0.0.1:4000${LITELLM_PATH}|${REQ_FILE}" \
+      "POST:http://127.0.0.1:4001${AGW_PATH}|${REQ_FILE}"
     echo "==> All services ready"
+    if [[ "${API_FORMAT}" == "anthropic" ]]; then
+      echo "==> Checking LiteLLM Rust header"
+      if curl -sD - -o /dev/null "http://127.0.0.1:4000${LITELLM_PATH}" \
+        -H "Content-Type: application/json" \
+        --data-binary "@${REQ_FILE}" | grep -qi 'x-litellm-rust:[[:space:]]*true'; then
+        echo "    x-litellm-rust: true"
+      else
+        echo "    WARNING: x-litellm-rust header missing (Python fallback?)" >&2
+      fi
+    fi
   fi
 
   METRICS_FILE="${RUN_DIR}/metrics-${size}.csv"
@@ -154,7 +189,7 @@ for size in ${PAYLOAD_SIZES//,/ }; do
     -t "${TOOL}" \
     --csv \
     --payload-content \
-    "http://127.0.0.1:4000/v1/chat/completions#litellm,http://127.0.0.1:4001/v1/chat/completions#agentgateway" \
+    "http://127.0.0.1:4000${LITELLM_PATH}#litellm,http://127.0.0.1:4001${AGW_PATH}#agentgateway" \
     | tee "${LATENCY_FILE}"
 
   wait "${METRICS_PID}" || true
