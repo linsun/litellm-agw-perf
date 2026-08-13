@@ -10,7 +10,7 @@ QPS="${QPS:-0}"
 DURATION="${DURATION:-3}"
 TOOL="${TOOL:-fortio}"
 LITELLM_WORKERS="${LITELLM_WORKERS:-}"
-API_FORMAT="${API_FORMAT:-anthropic}"
+API_FORMAT="${API_FORMAT:-openai}"
 KEEP_RUNNING="${KEEP_RUNNING:-false}"
 COMPOSE_FILE="${ROOT}/docker-compose.yml"
 
@@ -28,7 +28,7 @@ Options:
   -d, --duration        Benchmark duration in seconds (default: 3)
   -t, --tool            Load generator: fortio, hey, oha, wrk (default: fortio)
   -w, --workers         LiteLLM worker count (default: CPU count)
-  -a, --api             API format: openai or anthropic (default: anthropic)
+  -a, --api             API format: openai or anthropic (default: openai)
   --skip-up             Skip docker compose up (services already running)
   --skip-down           Leave containers running after the benchmark
   -h, --help            Show this help
